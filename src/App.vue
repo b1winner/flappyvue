@@ -1,10 +1,17 @@
+<!--npm run serve-->
+
 <template>
   <div id="app" @click="jump" :style="{ height: windowHeight + 'px' }">
-    <div class="bird" :style="{ top: birdTop + 'px' }"></div>
+    <div class="bird" :style="{ top: birdy + 'px' }"></div>
     <div class="pipe" v-for="(pipe, index) in pipes" :key="index" :style="{ left: pipe.left + 'px' }">
-      <div class="pipe up" :style="{ height: pipe.upHeight + 'px' }"></div>
-      <div class="pipe down" :style="{ height: pipe.downHeight + 'px' }"></div>
+      <div class="pipe top" :style="{ height: pipe.topHeight + 'px' }"></div>
+      <div class="space" :style="{ height: '150px' }"></div>
+      <div class="pipe bottom" :style="{ height: pipe.bottomHeight + 'px' }"></div>
     </div>
+  </div>
+  <div id="text">
+    <h1>Flappy Vue!</h1>
+
   </div>
 </template>
 
@@ -12,63 +19,75 @@
 export default {
   data() {
     return {
-      birdTop: 220,
+      birdy: 220,
       windowHeight: 450,
       pipes: [],
       timer: null,
       pipeTimer: null,
+      score: 0,
     };
   },
   methods: {
     jump() {
-      this.birdTop -= 80;
+      this.birdy -= 80;
     },
-    startMoving() {
-      if (this.timer) return;
-      this.timer = setInterval(() => {
-        this.birdTop += 2;
-        this.pipes.forEach((pipe) => {
-          pipe.left -= 2;
-        });
-        this.checkCollision();
-      }, 20);
-      this.pipeTimer = setInterval(this.addPipe, 3000);
-    },
-    addPipe() {
-      const upHeight = 100 + Math.floor(Math.random() * 150);
-      const downHeight = this.windowHeight - 150 - upHeight;
-      const pipe = { upHeight, downHeight, left: 500 };
-      this.pipes.push(pipe);
-    },
-    checkCollision() {
+    checkLose() {
       for (let pipe of this.pipes) {
         if (
-            (this.birdTop <= pipe.upHeight || this.birdTop >= this.windowHeight - pipe.downHeight) &&
+            (this.birdy <= pipe.topHeight || this.birdy >= this.windowHeight - pipe.bottomHeight) &&
             pipe.left <= 80 && pipe.left >= 60
         ) {
-          this.gameOver();
+          this.stop();
+        }
+        else if (pipe.left === 60){
+          this.score+=1;
+          console.log(this.score);
         }
       }
     },
-    gameOver() {
+    run() {
+      if (this.timer) return;
+      this.timer = setInterval(() => {
+        this.birdy += 2;
+        this.pipes.forEach((pipe) => {
+          pipe.left -= 2;
+        });
+        this.checkLose();
+      }, 20);
+      this.pipeTimer = setInterval(this.newPipe, 2500); /*Spawn Rate*/
+    },
+    randomtopHeight() {
+      const howRandom = 222;
+      return Math.floor(Math.random() * howRandom);
+    },
+    newPipe() {
+      const gapSize = 150;
+      const topHeight = this.randomtopHeight();
+      const bottomHeight = this.windowHeight - gapSize - topHeight;
+      const pipe = { topHeight, bottomHeight, left: 500 }; /*start at 500 px when screen width is 400*/
+      this.pipes.push(pipe);
+    },
+    stop() {
+      /*Stop run*/
       clearInterval(this.timer);
       clearInterval(this.pipeTimer);
-      this.timer = null;
-      this.pipeTimer = null;
     },
   },
-  mounted() {
-    this.startMoving();
+  mounted() { /*starter*/
+    this.run();
   },
 };
 </script>
 
 <style>
+#text {
+  background: azure;
+}
 #app {
   position: relative;
   width: 400px;
   background-image: url("../flappy_assets/sprites/background-day.png");
-  overflow: hidden;
+  overflow: hidden;  /*hide offscreen stuff*/
 }
 .bird {
   width: 34px;
@@ -81,15 +100,17 @@ export default {
   width: 50px;
   position: absolute;
 }
-.pipe.up {
-  position: absolute;
-  top: 100%;
+.pipe.top {
+  position: relative;
   background-image: url("../flappy_assets/sprites/pipe-green.png");
   transform: rotate(180deg);
 }
-.pipe.down {
+.space {
+  position: relative;
+  color: aliceblue;
+}
+.pipe.bottom {
   position: absolute;
-  bottom: 00px;
   background-image: url("../flappy_assets/sprites/pipe-green.png");
 }
 </style>
