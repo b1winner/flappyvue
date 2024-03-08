@@ -9,10 +9,10 @@
       <div class="pipe bottom" :style="{ height: pipe.bottomHeight + 'px' }"></div>
     </div>
   </div>
-  <div id="text">
+<!--  <div id="text">
     <h1>Flappy Vue!</h1>
 
-  </div>
+  </div>-->
 </template>
 
 <script>
