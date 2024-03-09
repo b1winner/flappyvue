@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     jump() {
-      this.birdy -= 80;
+      this.birdy -= 90;
     },
     checkLose() {
       for (let pipe of this.pipes) {
@@ -39,7 +39,7 @@ export default {
         ) {
           this.stop();
         }
-        else if (pipe.left === 60){
+        else if (pipe.left === 60){ //increase score
           this.score+=1;
           console.log(this.score);
         }
@@ -64,7 +64,7 @@ export default {
       const gapSize = 150;
       const topHeight = this.randomtopHeight();
       const bottomHeight = this.windowHeight - gapSize - topHeight;
-      const pipe = { topHeight, bottomHeight, left: 500 }; /*start at 500 px when screen width is 400*/
+      const pipe = { topHeight, bottomHeight, left: 450 }; /*start at 450 px when screen width is 400*/
       this.pipes.push(pipe);
     },
     stop() {
@@ -94,7 +94,7 @@ export default {
   height: 24px;
   background-image: url("../flappy_assets/sprites/redbird-midflap.png");
   position: absolute;
-  left: 80px;
+  left: 80px; /*Shift Right from left side*/
 }
 .pipe {
   width: 50px;
