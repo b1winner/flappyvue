@@ -1,7 +1,15 @@
 <!--npm run serve-->
+<!--installed firebase from npm-->
+<!--https://firebase.google.com/docs/firestore/quickstart-->
+
 
 <template>
   <div id="app" @click="jump" :style="{ height: windowHeight + 'px' }">
+    <figure>
+      <img id="playScore0" src="../flappy_assets/sprites/0.png" style="float: left; margin-left:40%; margin-right: 5%; margin-bottom: 5%;"><img id="playScore" src="../flappy_assets/sprites/0.png" style="float: left; margin-right: 5%; margin-bottom: 5%;">
+    </figure>
+
+<!--    <div class="playScore" :style="{ top: playScorey + 'px' }"></div>-->
     <div class="bird" :style="{ top: birdy + 'px' }"></div>
     <div class="pipe" v-for="(pipe, index) in pipes" :key="index" :style="{ left: pipe.left + 'px' }">
       <div class="pipe top" :style="{ height: pipe.topHeight + 'px' }"></div>
@@ -9,13 +17,79 @@
       <div class="pipe bottom" :style="{ height: pipe.bottomHeight + 'px' }"></div>
     </div>
   </div>
-<!--  <div id="text">
+  <div id="text">
     <h1>Flappy Vue!</h1>
-
-  </div>-->
+    <h3>Score Board</h3>
+    <ul class="collection" id="score_ul"></ul>
+  </div>
 </template>
+<script type="text/javascript">
+// Import the functions you need from the SDKs you need
 
-<script>
+//import { initializeApp } from "firebase/app";
+//import firebase from "firebase/compat/app";
+//import firebase from 'firebase/app';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+//import {waitFor} from "@babel/core/lib/gensync-utils/async";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyACAPoGV__CZog6MfD2WgTYvgAjTHE9vgE",
+  authDomain: "cmpsc421-flappyvue.firebaseapp.com",
+  projectId: "cmpsc421-flappyvue",
+  storageBucket: "cmpsc421-flappyvue.appspot.com",
+  messagingSenderId: "194566899644",
+  appId: "1:194566899644:web:ab0ec33c4b386ca9738db9"
+};
+
+// Initialize Firebase
+//const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+db.settings({})
+window.addEventListener("load", async function () {
+  // do things after the DOM loads fully
+  console.log("Everything is loaded");
+  const ul = document.getElementById("score_ul");
+  console.log(ul);
+  const citiesRef = db.collection('highScores');
+  const snapshot = await citiesRef.orderBy('score','desc').get();
+  snapshot.forEach(doc => {
+    console.log(doc.id, '=>', doc.data());
+    console.log(doc.data().score);
+    let li = document.createElement('li');
+    li.innerText = doc.data().playerName + ": " + doc.data().score;
+    ul.appendChild(li);
+  });
+});
+
+/*db.collection('highScores')
+    .orderBy('score', 'desc')
+    .limit(10) // Get top 10 scores
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        console.log(doc.data()); // Handle each high score
+        let li = document.createElement('li');
+        li.className = "collection-item"
+        let span = document.createElement('span');
+        span.className = 'title';
+        span.textContent = doc.data().playerName;
+
+        // <p className="grey-text">2023</p>
+        let p = document.createElement('p');
+        p.className = 'grey-text';
+        // p.textContent = '2023'
+        p.textContent = doc.data().score;
+        li.append(span)
+        li.append(p)
+        ul.append(li);
+      });
+    });*/
+
 export default {
   data() {
     return {
@@ -42,6 +116,17 @@ export default {
         else if (pipe.left === 60){ //increase score
           this.score+=1;
           console.log(this.score);
+          const playScore = document.getElementById("playScore");
+          if (this.score <= 9){
+            playScore.src="https://github.com/samuelcust/flappy-bird-assets/blob/master/sprites/"+this.score+".png?raw=true";
+          }
+          else {
+            const playScore0 = document.getElementById("playScore0");
+            playScore0.src="https://github.com/samuelcust/flappy-bird-assets/blob/master/sprites/"+String(this.score)[0]+".png?raw=true";
+            playScore.src="https://github.com/samuelcust/flappy-bird-assets/blob/master/sprites/"+String(this.score)[1]+".png?raw=true";
+          }
+
+
         }
       }
     },
@@ -71,6 +156,10 @@ export default {
       /*Stop run*/
       clearInterval(this.timer);
       clearInterval(this.pipeTimer);
+      db.collection('highScores').add({
+        playerName: 'Anon Player',
+        score: this.score,
+      });
     },
   },
   mounted() { /*starter*/
@@ -95,6 +184,10 @@ export default {
   background-image: url("../flappy_assets/sprites/redbird-midflap.png");
   position: absolute;
   left: 80px; /*Shift Right from left side*/
+}
+.playScore {
+  position: absolute;
+  left: 450px;
 }
 .pipe {
   width: 50px;
